@@ -8,6 +8,8 @@
 #include "parts.h"
 using std::string;
 
+string file_name;
+
 int width, height;
 int x, y;
 
@@ -42,7 +44,7 @@ int main(int argc, char **argv)
         getch();
         return 1;
     }
-
+    file_name = argv[1];
     if (atoi(argv[2]) == 1)
     {
         while (true)
@@ -152,15 +154,55 @@ void screen_refresh()
 {   
     cls();
     gotoxy(x, y);
-    for (int i = 0 ; i < lines_count.size() ; i++)
+
+    std::vector<char> displayed_text;
+    if (y > lines.size())
+    {
+        printf("work in progres");
+    }
+
+    int line_count = 0;
+    int in_line_position = 0;
+    for (int i = 0 ; i < lines_count.size() - 1 ; i++)
     {
         for (int j = 0 ; j < width ; j++)
         {
             switch (buffer[i * width + j])
             {
+                case '\n':
+                {
+                    std::cout << '\n';
+                    in_line_position = 0;
+                }
 
+                default:
+                {
+                    std::cout << buffer[i * width + j];
+                
+                    if (in_line_position == width - 1)
+                    {
+                        std::cout << newl;
+                        in_line_position = 0;
+                    }    
+                    else
+                    {
+                        in_line_position++;
+                    }
+                    in_line_position++;
+                }
             }
         }
     }
+    std::cout << newl;
 
+    // status bar
+
+    std::cout << bg_blue;
+    string status =
+    "chars: "  + std::to_string(buffer.size()) + ' ' + '|' + ' ' +
+    "lines: "  + std::to_string(lines.size())  + ' ' + '|' + ' ' + 
+    "width: "  + std::to_string(width)         + ' ' + '|' + ' ' + 
+    "height: " + std::to_string(height)        ;
+    status += ' '*(width - status.size() - file_name.size());
+    status += file_name;
 }
