@@ -32,6 +32,7 @@
 
 #define Esc     27
 #define newl    "\n"
+#define space   ' '
 
 #define sep     green + '~' + reset
 
