@@ -8,17 +8,19 @@
 
 #include "parts.h"
 
+using std::string;
+
 struct terminal
 {
     int width;
     int heigh;
-
 } term;
 
 struct cursor
 {
     int x;
     int y;
+    int line;
 } cs;
 
 
@@ -52,7 +54,6 @@ int main(int argc, char* argv[1])
     }
 
     get_terminal_size();
-    screenRefresh();
 
     fname = argv[1];
 
@@ -60,6 +61,7 @@ int main(int argc, char* argv[1])
     char c;
     while(1)
     {
+        screenRefresh();
         c = getch();
         switch(c)
         {
@@ -92,15 +94,17 @@ int main(int argc, char* argv[1])
 
             default:
             {
+                if(c > 31 && c < 127)
+
                 if(i != (sizeof(input)) - 1)
                 {
-                    insert(i, 'c');
+                    insert(i, c);
                     i++;
                     break;
                 }
                 else
                 {
-                    input[1] = c;
+                    input[i] = c;
                 }
 
                 cs.x++;
@@ -109,7 +113,6 @@ int main(int argc, char* argv[1])
                 break;
             }
         }
-        screenRefresh();
     }
 
     return 0;
@@ -119,6 +122,7 @@ int main(int argc, char* argv[1])
 void screenRefresh()
 {
     cls();
+    int lines_count = 1;
     for(int i = 0 ; i < sizeof(input) ; i++)
     {
         switch(input[i])
@@ -126,6 +130,13 @@ void screenRefresh()
             case '\t':
             {
                 std::cout << "    ";
+                break;
+            }
+
+            case '\n':
+            {
+                std::cout << '\n';
+                lines_count++;
                 break;
             }
 
@@ -138,10 +149,24 @@ void screenRefresh()
         
     }
     std::cout << '\n';
-    for(int i = term.heigh - lines ; i < term.heigh ; i++)
+
+  
+
+    for(int i = 0 ; i < (term.heigh - lines_count) - 1 ; i++)
     {
         std::cout << green << '~' << reset << '\n';
     }
+
+    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(sizeof(input) - 1);
+    std::cout << bg_blue << info;
+    for(int i = 0 ; i < (term.width - info.length()) ; i++)
+    {
+        std::cout << space;
+    }
+    std::cout << fname;
+    std::cout << reset;
+
+    gotoxy(cs.x, cs.y);
 }
 
 void insert(int pos, char x)
