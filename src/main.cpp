@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +10,7 @@
 #include "parts.h"
 
 using std::string;
+using std::vector;
 
 struct terminal
 {
@@ -28,11 +30,19 @@ char input[128];
 char* fname;
 char* dpath;
 
-int lines = 1;
+struct lines_t
+{
+    vector<char*> lines;
+    vector<int> lenght;
+
+    int number;
+}lines;
+
 
 void screenRefresh();
 void insert(int i, char x);
 int get_terminal_size();
+int getLines();
 
 int main(int argc, char* argv[1])
 {
@@ -72,6 +82,32 @@ int main(int argc, char* argv[1])
                 exit(1);
             }
 
+            case arrow_left:
+            {
+                if(i <= 1)
+                {
+                    break;
+                }
+                i--;
+                if(--i == '\n')
+                {
+                    cs.y--;
+                }
+                break;
+            }
+
+
+            case arrow_right:
+            {
+                if(i >= strlen(input))
+                {
+                    break;
+                }
+                i++;
+                break;
+            }
+
+
             case 13:
             {
                 if(i != (sizeof(input)) - 1)
@@ -87,8 +123,20 @@ int main(int argc, char* argv[1])
                 cs.x = 0;
                 cs.y++;
 
-                lines++;
+                lines.number++;
                 i++;
+                break;
+            }
+
+            case '\b':
+            {
+                if(i == 0)
+                {
+                    break;
+                }
+                erase(input[i]);
+                i--;
+                cs.x--;
                 break;
             }
 
@@ -159,7 +207,7 @@ void screenRefresh()
 
     std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(sizeof(input) - 1);
     std::cout << bg_blue << info;
-    for(int i = 0 ; i < (term.width - info.length()) ; i++)
+    for(int i = 0 ; i < (term.width - info.length()) - strlen(fname) ; i++)
     {
         std::cout << space;
     }
@@ -178,6 +226,15 @@ void insert(int pos, char x)
     input[pos] = x;
 }
 
+void erase(int pos)
+{
+    for (int i = strlen(input) ; i < pos ; i++)
+    {
+        input[--i] = input[i];
+    }
+
+}
+
 int get_terminal_size()
 {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -193,4 +250,33 @@ int get_terminal_size()
         return -1;
     }
 
+}
+
+int getLines()
+{
+    /* todo:
+
+        for loop: 
+
+        add actual position to vector[j][i]
+
+        increment $i if actual position on input is '\n' 
+
+        end:
+    */
+
+    vector<char*> lines_; 
+
+    int j = 0;
+    int it;
+    for (int i = 0 ; i < strlen(input) ; i++)
+    {
+        lines.lines[j][it] = input[i];
+        if(input[i] == '\n')
+        {
+            j++;
+        }
+    }
+    
+    return 0;
 }
