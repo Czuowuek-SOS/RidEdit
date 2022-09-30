@@ -41,6 +41,7 @@ struct lines_t
 
 void screenRefresh();
 void insert(int i, char x);
+void erase(int pos);
 int get_terminal_size();
 int getLines();
 
