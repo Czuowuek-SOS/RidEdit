@@ -20,9 +20,8 @@ struct terminal
 
 struct cursor
 {
-    int x;
-    int y;
-    int line;
+    int x = 1;
+    int y = 1;
 } cs;
 
 
@@ -36,14 +35,14 @@ struct lines_t
     vector<int> lenght;
 
     int number;
-}lines;
-
+} lines;
 
 void screenRefresh();
 void insert(int i, char x);
 void erase(int pos);
 int get_terminal_size();
 int getLines();
+int getLinesLenght();
 
 int main(int argc, char* argv[1])
 {
@@ -71,16 +70,24 @@ int main(int argc, char* argv[1])
     int i;
     char c;
     while(1)
-    {
+    {   
+        getLinesLenght();
         screenRefresh();
+
         c = getch();
         switch(c)
         {
 
-            case CTRL('q'):
+            case CTRL('Q'):
             {
                 fclose(fp);
                 exit(1);
+            }
+
+            case CTRL('R'):
+            {
+                get_terminal_size();
+                break;
             }
 
             case arrow_left:
@@ -206,7 +213,7 @@ void screenRefresh()
         std::cout << green << '~' << reset << '\n';
     }
 
-    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(sizeof(input) - 1);
+    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(strlen(input) - 1);
     std::cout << bg_blue << info;
     for(int i = 0 ; i < (term.width - info.length()) - strlen(fname) ; i++)
     {
@@ -279,5 +286,21 @@ int getLines()
         }
     }
     
+    return 0;
+}
+
+int getLinesLenght()
+{
+    int lenght = 0;
+    int i = 0;
+    for (int j ; j < strlen(input) ; j++)
+    {   
+        if (input[j] == '\n')
+        {
+            lines.lenght[j] = lenght;
+            i++;
+        }
+        lenght++;
+    }
     return 0;
 }
