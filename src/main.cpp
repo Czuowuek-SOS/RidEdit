@@ -28,6 +28,8 @@ struct cursor
 char input[128];
 char* fname;
 char* dpath;
+char last_char;
+
 
 struct lines_t
 {
@@ -46,6 +48,8 @@ int getLinesLenght();
 
 int main(int argc, char* argv[1])
 {
+    
+
     atexit([]()
     {
         cls();
@@ -97,9 +101,14 @@ int main(int argc, char* argv[1])
                     break;
                 }
                 i--;
-                if(--i == '\n')
+                if(input[i] == '\n')
                 {
                     cs.y--;
+                    cs.x = lines.lenght[cs.y];
+                }
+                else
+                {
+                    cs.x--;
                 }
                 break;
             }
@@ -112,6 +121,15 @@ int main(int argc, char* argv[1])
                     break;
                 }
                 i++;
+                if(input[i] == '\n')
+                {
+                    cs.y++;
+                    cs.x = 0;
+                }
+                else
+                {
+                    cs.x++;
+                }
                 break;
             }
 
@@ -142,8 +160,16 @@ int main(int argc, char* argv[1])
                 {
                     break;
                 }
-                erase(input[i]);
+
                 i--;
+                if(i == strlen(input))
+                {
+                    input[i] = 0;
+                }
+                else
+                {
+                    erase(input[i]);
+                }
                 cs.x--;
                 break;
             }
@@ -152,9 +178,12 @@ int main(int argc, char* argv[1])
             {
                 if(c > 31 && c < 127)
 
-                if(i != (sizeof(input)) - 1)
+                if(i != (strlen(input)))
                 {
                     insert(i, c);
+
+                    cs.x++;
+
                     i++;
                     break;
                 }
@@ -169,6 +198,7 @@ int main(int argc, char* argv[1])
                 break;
             }
         }
+        last_char = c;
     }
 
     return 0;
@@ -213,7 +243,7 @@ void screenRefresh()
         std::cout << green << '~' << reset << '\n';
     }
 
-    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(strlen(input) - 1);
+    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(strlen(input) - 1) + " | " + "c: " + std::to_string((int)last_char);
     std::cout << bg_blue << info;
     for(int i = 0 ; i < (term.width - info.length()) - strlen(fname) ; i++)
     {
@@ -236,9 +266,9 @@ void insert(int pos, char x)
 
 void erase(int pos)
 {
-    for (int i = strlen(input) ; i < pos ; i++)
+    for (int i = pos ; i < strlen(input) - 1 ; i++)
     {
-        input[--i] = input[i];
+        input[i] = input[++i];
     }
 
 }
