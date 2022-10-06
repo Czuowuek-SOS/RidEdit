@@ -25,7 +25,8 @@ struct cursor
 } cs;
 
 
-char input[128];
+// char input[128];
+vector<char> input;
 char* fname;
 char* dpath;
 char last_char;
@@ -94,6 +95,12 @@ int main(int argc, char* argv[1])
                 break;
             }
 
+            case CTRL('S'):
+            {
+                fwrite(input, strlen(input), 1, fp);
+                break;
+            }
+
             case arrow_left:
             {
                 if(i <= 1)
@@ -124,7 +131,7 @@ int main(int argc, char* argv[1])
                 if(input[i] == '\n')
                 {
                     cs.y++;
-                    cs.x = 0;
+                    cs.x = 1;
                 }
                 else
                 {
@@ -136,20 +143,36 @@ int main(int argc, char* argv[1])
 
             case 13:
             {
-                if(i != (sizeof(input)) - 1)
+                if(i != strlen(input))
                 {
                     insert(i, '\n');
-
                 }
                 else 
                 {
                     input[i] = '\n';
                 }
 
-                cs.x = 0;
+                cs.x = 1;
                 cs.y++;
 
                 lines.number++;
+                i++;
+                break;
+            }
+
+            case 't':
+            {
+                if(i != strlen(input))
+                {
+                    insert(i, '\t');
+                }
+                else 
+                {
+                    input[i] = '\t';
+                }
+
+                cs.x += 4;
+
                 i++;
                 break;
             }
@@ -161,7 +184,24 @@ int main(int argc, char* argv[1])
                     break;
                 }
 
+
                 i--;
+                if(input[i] == '\n')
+                {
+                    cs.y--;
+                    cs.x = lines.lenght[cs.y];
+
+                    lines.number--;
+                }
+                else if(input[i] == '\t')
+                {
+                    cs.x -= 4;
+                }
+                else
+                {
+                    cs.x--;
+                }
+
                 if(i == strlen(input))
                 {
                     input[i] = 0;
@@ -170,7 +210,6 @@ int main(int argc, char* argv[1])
                 {
                     erase(input[i]);
                 }
-                cs.x--;
                 break;
             }
 
