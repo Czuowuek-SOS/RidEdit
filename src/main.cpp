@@ -25,8 +25,8 @@ struct cursor
 } cs;
 
 
-// char input[128];
-vector<char> input;
+char input[128];
+// vector<char> input;
 char* fname;
 char* dpath;
 char last_char;
