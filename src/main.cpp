@@ -26,7 +26,8 @@ struct cursor
 
 
 // vector<char> input;
-char input[256];
+// char input[256];
+string input;
 char copyBoard[16];
 
 char* fname;
@@ -82,7 +83,7 @@ int main(int argc, char* argv[1])
     char c;
     while(1)
     {   
-        // getLinesLenght();
+        getLinesLenght();
         // getLines();
         screenRefresh();
 
@@ -104,7 +105,8 @@ int main(int argc, char* argv[1])
 
             case CTRL('S'):
             {
-                fwrite(input, strlen(input), 1, fp);
+                const char* buf = input.c_str();
+                fwrite(buf, strlen(buf), 1, fp);
                 break;
             }
 
@@ -139,7 +141,7 @@ int main(int argc, char* argv[1])
 
             case arrow_right:
             {
-                if(i >= strlen(input))
+                if(i >= input.length())
                 {
                     break;
                 }
@@ -163,13 +165,14 @@ int main(int argc, char* argv[1])
 
             case 13:
             {
-                if(i != strlen(input))
+                if(i != input.length())
                 {
                     insert(i, '\n');
                 }
                 else 
                 {
-                    input[i] = '\n';
+                    // input[i] = '\n';
+                    input += '\n';
                 }
 
                 cs.x = 1;
@@ -182,13 +185,14 @@ int main(int argc, char* argv[1])
 
             case '\t':
             {
-                if(i != strlen(input))
+                if(i != input.length())
                 {
                     insert(i, '\t');
                 }
                 else 
                 {
-                    input[i] = '\t';
+                    // input[i] = '\t';
+                    input += '\t';
                 }
 
                 cs.x += 4;
@@ -222,13 +226,15 @@ int main(int argc, char* argv[1])
                     cs.x--;
                 }
 
-                if(i == strlen(input))
+                if(i == input.length())
                 {
-                    input[i] = 0;
+                    // input[i] = '\0';
+                    input.erase(i);
                 }
                 else
                 {
-                    erase(input[i]);
+                    // erase(input[i]);
+                    input.erase(i);
                 }
                 break;
             }
@@ -237,9 +243,10 @@ int main(int argc, char* argv[1])
             {
                 if(c > 31 && c < 127)
 
-                if(i != (strlen(input)))
+                if(i != input.length())
                 {
                     insert(i, c);
+                    // input.insert(i, c);
 
                     cs.x++;
 
@@ -248,7 +255,8 @@ int main(int argc, char* argv[1])
                 }
                 else
                 {
-                    input[i] = c;
+                    // input[i] = c;
+                    input += c;
                 }
 
                 cs.x++;
@@ -268,7 +276,7 @@ void screenRefresh()
 {
     cls();
     int lines_count = 1;
-    for(int i = 0 ; i < sizeof(input) ; i++)
+    for(int i = 0 ; i < input.length() ; i++)
     {
         switch(input[i])
         {
@@ -302,7 +310,7 @@ void screenRefresh()
         std::cout << green << '~' << reset << '\n';
     }
 
-    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(strlen(input) - 1) + " | " + "c: " + std::to_string((int)last_char);
+    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(input.length() - 1) + " | " + "c: " + std::to_string((int)last_char);
     std::cout << bg_blue << info;
     for(int i = 0 ; i < (term.width - info.length()) - strlen(fname) ; i++)
     {
@@ -325,7 +333,7 @@ void insert(int pos, char x)
 
 void erase(int pos)
 {
-    for (int i = pos ; i < strlen(input); i++)
+    for (int i = --pos ; i < input.length() + 1 ; i++)
     {
         input[i] = input[++i];
     }
@@ -366,7 +374,7 @@ int getLines()
 
     int j = 0;
     int it;
-    for (int i = 0 ; i < strlen(input) ; i++)
+    for (int i = 0 ; i < input.length() ; i++)
     {
         lines.lines[j][it] = input[i];
         if(input[i] == '\n')
@@ -382,7 +390,7 @@ int getLinesLenght()
 {
     int in_line_index = 0;
     int current_line = 0;
-    for(int i = 0 ; i < strlen(input) ; i++)
+    for(int i = 0 ; i < input.length() ; i++)
     {
         if(input[i] == '\n')
         {
