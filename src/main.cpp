@@ -25,8 +25,10 @@ struct cursor
 } cs;
 
 
-char input[128];
 // vector<char> input;
+char input[256];
+char copyBoard[16];
+
 char* fname;
 char* dpath;
 char last_char;
@@ -61,11 +63,15 @@ int main(int argc, char* argv[1])
         std::cout << red << "Expected arguments" << reset << '\n';
     }
 
-    FILE* fp = fopen(argv[1], "r+");
+    FILE* fp = fopen(argv[1], "r");
     if (fp == NULL)
     {
         std::cout << red << "file no found\n" << reset;
         return 1;
+    }
+    else
+    {
+        freopen(argv[1], "w+", fp);
     }
 
     get_terminal_size();
@@ -76,7 +82,8 @@ int main(int argc, char* argv[1])
     char c;
     while(1)
     {   
-        getLinesLenght();
+        // getLinesLenght();
+        // getLines();
         screenRefresh();
 
         c = getch();
@@ -103,20 +110,29 @@ int main(int argc, char* argv[1])
 
             case arrow_left:
             {
-                if(i <= 1)
+                if(i == 0)
                 {
                     break;
                 }
+
+
                 i--;
                 if(input[i] == '\n')
                 {
                     cs.y--;
-                    cs.x = lines.lenght[cs.y];
+                    // cs.x = lines.lenght[cs.y];
+
+                    lines.number--;
+                }
+                else if(input[i] == '\t')
+                {
+                    cs.x -= 4;
                 }
                 else
                 {
                     cs.x--;
                 }
+                
                 break;
             }
 
@@ -132,6 +148,10 @@ int main(int argc, char* argv[1])
                 {
                     cs.y++;
                     cs.x = 1;
+                }
+                else if(input[i] == '\t')
+                {
+                    cs.x += 4;
                 }
                 else
                 {
@@ -160,7 +180,7 @@ int main(int argc, char* argv[1])
                 break;
             }
 
-            case 't':
+            case '\t':
             {
                 if(i != strlen(input))
                 {
@@ -305,7 +325,7 @@ void insert(int pos, char x)
 
 void erase(int pos)
 {
-    for (int i = pos ; i < strlen(input) - 1 ; i++)
+    for (int i = pos ; i < strlen(input); i++)
     {
         input[i] = input[++i];
     }
@@ -360,16 +380,21 @@ int getLines()
 
 int getLinesLenght()
 {
-    int lenght = 0;
-    int i = 0;
-    for (int j ; j < strlen(input) ; j++)
-    {   
-        if (input[j] == '\n')
+    int in_line_index = 0;
+    int current_line = 0;
+    for(int i = 0 ; i < strlen(input) ; i++)
+    {
+        if(input[i] == '\n')
         {
-            lines.lenght[j] = lenght;
-            i++;
+            lines.lenght.push_back(in_line_index);
+            in_line_index = 0;
+            current_line++;
         }
-        lenght++;
+        else
+        {
+            in_line_index++;
+        }
     }
+    lines.lenght.push_back(in_line_index);
     return 0;
 }
