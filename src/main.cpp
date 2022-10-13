@@ -32,6 +32,7 @@ char copyBoard[16];
 
 char* fname;
 char* dpath;
+char* textColor;
 char last_char;
 
 
@@ -42,6 +43,13 @@ struct lines_t
 
     int number;
 } lines;
+
+struct selected_t
+{
+    int first = -1;
+    int last  = -1;
+    string selected;
+} selected;
 
 void screenRefresh();
 void insert(int i, char x);
@@ -105,8 +113,50 @@ int main(int argc, char* argv[1])
 
             case CTRL('S'):
             {
-                const char* buf = input.c_str();
-                fwrite(buf, strlen(buf), 1, fp);
+                // const char* buf = input.c_str();
+                fwrite(input.c_str(), strlen(input.c_str()), 1, fp);
+                break;
+            }
+
+            case CTRL('A'):
+            {
+                selected.first = i;
+                break;
+            }
+
+            case CTRL('B'):
+            {
+                selected.last = i;
+                break;
+            }
+
+            case CTRL('U'):
+            {
+                selected.first = -1;
+                selected.last  = -1;
+                break;
+            }
+
+            case CTRL('C'):
+            {
+                for(int j = selected.first ; j < selected.last ; j++)
+                {
+                    selected.selected += input[j];
+                }
+                break;
+            }
+
+
+            case CTRL('V'):
+            {
+                int index = i;
+                for(int j = 0 ; j < selected.selected.length() ; j++)
+                {
+                    // insert(index, selected.selected[j]);
+                    input += selected.selected[j];
+                    cs.x++;
+                    i++;
+                }
                 break;
             }
 
@@ -122,7 +172,7 @@ int main(int argc, char* argv[1])
                 if(input[i] == '\n')
                 {
                     cs.y--;
-                    // cs.x = lines.lenght[cs.y];
+                    cs.x = lines.lenght[cs.y];
 
                     lines.number--;
                 }
@@ -134,6 +184,7 @@ int main(int argc, char* argv[1])
                 {
                     cs.x--;
                 }
+
                 
                 break;
             }
@@ -145,6 +196,7 @@ int main(int argc, char* argv[1])
                 {
                     break;
                 }
+                
                 i++;
                 if(input[i] == '\n')
                 {
@@ -159,6 +211,7 @@ int main(int argc, char* argv[1])
                 {
                     cs.x++;
                 }
+
                 break;
             }
 
@@ -180,6 +233,25 @@ int main(int argc, char* argv[1])
 
                 lines.number++;
                 i++;
+                break;
+            }
+
+            case '(':
+            {
+                if(i != input.length())
+                {
+                    insert(i, '(');
+                    insert(++i, ')');
+                }
+                else 
+                {
+                    // input[i] = '\t';
+                    input += '(';
+                    input += ')';
+                }
+
+                i++;
+                cs.x++;
                 break;
             }
 
@@ -241,7 +313,10 @@ int main(int argc, char* argv[1])
 
             default:
             {
-                if(c > 31 && c < 127)
+                if(!(c > 31) && !(c < 127))
+                {
+                    break;
+                }
 
                 if(i != input.length())
                 {
@@ -275,27 +350,63 @@ int main(int argc, char* argv[1])
 void screenRefresh()
 {
     cls();
-    int lines_count = 1;
+    int in_line_index;
+    int lines_index = 1;
     for(int i = 0 ; i < input.length() ; i++)
     {
+        if(in_line_index > term.width)
+        {
+            std::cout << "\n>>";
+            lines_index++;
+            in_line_index = 2;
+        }
+
+        if(selected.first == i)
+        {
+            std::cout << bg_blue;
+        }
+        else if(selected.last == i)
+        {
+            std::cout << reset;
+        }
+        
         switch(input[i])
         {
             case '\t':
             {
                 std::cout << "    ";
+                in_line_index += 4;
+
                 break;
             }
 
             case '\n':
             {
                 std::cout << '\n';
-                lines_count++;
+                lines_index++;
+                in_line_index = 0;
+
                 break;
             }
+
+            // case '#':
+            // {
+            //     setTextColor(magenta);
+            // }
+
+            // case ' ':
+            // {
+            //     if (textColor != reset) 
+            //     {
+            //         setTextColor(reset);
+            //     }
+            // }
 
             default:
             {
                 std::cout << input[i];
+                in_line_index++;
+
                 break;
             }
         }
@@ -305,12 +416,12 @@ void screenRefresh()
 
   
 
-    for(int i = 0 ; i < (term.heigh - lines_count) - 1 ; i++)
+    for(int i = 0 ; i < (term.heigh - lines_index) - 1 ; i++)
     {
         std::cout << green << '~' << reset << '\n';
     }
 
-    std::string info = "lines: " + std::to_string(lines_count) + " | " + "chars: " + std::to_string(input.length() - 1) + " | " + "c: " + std::to_string((int)last_char);
+    std::string info = "lines: " + std::to_string(lines_index) + " | " + "chars: " + std::to_string(input.length() - 1) + " | " + "c: " + std::to_string((int)last_char);
     std::cout << bg_blue << info;
     for(int i = 0 ; i < (term.width - info.length()) - strlen(fname) ; i++)
     {
